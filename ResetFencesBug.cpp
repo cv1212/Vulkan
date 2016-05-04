@@ -1,12 +1,15 @@
 #include <vulkan/vulkan.h>
 #include <cassert>
-#include <random>
+#include <vector>
+
+#define BAIL_ON_CONDITION(C) if((C)) { return 1; }
+#define BAIL_IF_NOT_SUCCESS(V) BAIL_ON_CONDITION((V) != VK_SUCCESS)
 
 int main(int argc, char *argv[])
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dis(0, 1);
+    // std::random_device rd;
+    // std::mt19937 gen(rd());
+    // std::uniform_real_distribution<float> dis(0, 1);
 
     // Initialize the VkApplicationInfo structure
     VkApplicationInfo applicationInfo0 = {};
@@ -32,7 +35,7 @@ int main(int argc, char *argv[])
     // Create instance
     VkInstance instance0;
     VkResult result0 = vkCreateInstance(&instanceCreateInfo0, NULL, &instance0);
-    assert(result0 == VK_SUCCESS);
+    BAIL_IF_NOT_SUCCESS(result0);
 
     // Enumerate physical devices
     std::vector<VkPhysicalDevice> gpus0;
@@ -47,8 +50,8 @@ int main(int argc, char *argv[])
     }
     while(result1 == VK_INCOMPLETE);
 
-    assert(gpuCount0 != 0);
-    assert(result1 == VK_SUCCESS);
+    BAIL_IF_NOT_SUCCESS(result1);
+    BAIL_ON_CONDITION(gpuCount0 == 0);
 
     // Enumerate queue family properties for each gpu available
     std::vector<std::vector<VkQueueFamilyProperties>> queueFamilyProperties0;
@@ -71,61 +74,45 @@ int main(int argc, char *argv[])
     // Create logical devices that support graphics
     std::vector<VkDevice> logicalDevices0;
 
-    for (uint32_t i = 0; i < gpus0.size(); ++i)
+    for (uint32_t j = 0; j < queueFamilyProperties0[0].size(); ++j)
     {
-        for (uint32_t j = 0; j < queueFamilyProperties0[i].size(); ++j)
+        if (queueFamilyProperties0[0][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            if (queueFamilyProperties0[i][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-            {
-                // Assign random priorities
-                float sum = 0.0f;
-                std::vector<float> queuePriorities;
-                for (uint32_t k = 0;
-                        k < queueFamilyProperties0[i][j].queueCount; ++k)
-                {
-                    float priority = dis(gen);
-                    queuePriorities.push_back(priority);
-                    sum += priority;
-                }
+            std::vector<float> queuePriorities;
+            queuePriorities.push_back(1.0f);
 
-                // Normalise priorities
-                for (unsigned int k = 0; k < queuePriorities.size(); ++k)
-                {
-                    queuePriorities[k] /= sum;
-                }
+            VkDeviceQueueCreateInfo queueInfo = {};
+            queueInfo.queueFamilyIndex = j;
+            queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueInfo.pNext = NULL;
+            queueInfo.queueCount = queueFamilyProperties0[0][j].queueCount;
+            queueInfo.pQueuePriorities = queuePriorities.data();
 
-                VkDeviceQueueCreateInfo queueInfo = {};
-                queueInfo.queueFamilyIndex = j;
-                queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                queueInfo.pNext = NULL;
-                queueInfo.queueCount = queueFamilyProperties0[i][j].queueCount;
-                queueInfo.pQueuePriorities = queuePriorities.data();
+            VkDeviceCreateInfo deviceInfo = {};
+            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            deviceInfo.flags = 0;
+            deviceInfo.pNext = NULL;
+            deviceInfo.queueCreateInfoCount = 1;
+            deviceInfo.pQueueCreateInfos = &queueInfo;
+            deviceInfo.enabledExtensionCount = 0;
+            deviceInfo.ppEnabledExtensionNames = NULL;
+            deviceInfo.enabledLayerCount = 0;
+            deviceInfo.ppEnabledLayerNames = NULL;
+            deviceInfo.pEnabledFeatures = NULL;
 
-                VkDeviceCreateInfo deviceInfo = {};
-                deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-                deviceInfo.flags = 0;
-                deviceInfo.pNext = NULL;
-                deviceInfo.queueCreateInfoCount = 1;
-                deviceInfo.pQueueCreateInfos = &queueInfo;
-                deviceInfo.enabledExtensionCount = 0;
-                deviceInfo.ppEnabledExtensionNames = NULL;
-                deviceInfo.enabledLayerCount = 0;
-                deviceInfo.ppEnabledLayerNames = NULL;
-                deviceInfo.pEnabledFeatures = NULL;
+            VkDevice device;
+            VkResult res = vkCreateDevice(gpus0[0], &deviceInfo,
+                    NULL, &device);
 
-                VkDevice device;
-                VkResult res = vkCreateDevice(gpus0[i], &deviceInfo,
-                        NULL, &device);
+            logicalDevices0.push_back(device);
 
-                logicalDevices0.push_back(device);
-
-                assert(res == VK_SUCCESS);
-            }
+            BAIL_IF_NOT_SUCCESS(res);
         }
     }
 
+
     // Make sure we have atleast 1 device which supports graphics
-    assert(!logicalDevices0.empty());
+    BAIL_ON_CONDITION(logicalDevices0.empty());
 
     // Create fence
     VkFenceCreateInfo fenceCreateInfo0 = {};
@@ -137,15 +124,15 @@ int main(int argc, char *argv[])
     VkResult result2 = vkCreateFence(logicalDevices0[0], &fenceCreateInfo0,
             NULL, &fence0);
 
-    assert(result2 == VK_SUCCESS);
+    BAIL_IF_NOT_SUCCESS(result2);
 
     // Check that fence was created in signled state
     VkResult result3 = vkGetFenceStatus(logicalDevices0[0], fence0);
-    assert(result3 == VK_SUCCESS);
+    BAIL_IF_NOT_SUCCESS(result3);
 
     // Reset fence to the unsignaled state
     VkResult result4 = vkResetFences(logicalDevices0[0], 1, &fence0);
-    assert(result4 == VK_SUCCESS);
+    BAIL_IF_NOT_SUCCESS(result4);
 
     // Check that fence was reset to the unsignled state
     VkResult result5 = vkGetFenceStatus(logicalDevices0[0], fence0);
