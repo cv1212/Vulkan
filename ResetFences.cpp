@@ -11,9 +11,9 @@ int main(int argc, char *argv[])
 	VkApplicationInfo applicationInfo0 = {};
 	applicationInfo0.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo0.pNext = NULL;
-	applicationInfo0.pApplicationName = "ResetFencesBug";
+	applicationInfo0.pApplicationName = "ResetFences";
 	applicationInfo0.applicationVersion = 1;
-	applicationInfo0.pEngineName = "ResetFencesBugEngine";
+	applicationInfo0.pEngineName = "ResetFencesEngine";
 	applicationInfo0.engineVersion = 1;
 	applicationInfo0.apiVersion = VK_MAKE_VERSION(1, 0, 3);
 
