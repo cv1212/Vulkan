@@ -1,15 +1,11 @@
 #include <vulkan/vulkan.h>
 #include <cassert>
-#include <random>
+#include <vector>
 
-#define LIMIT 9
+#define LIMIT 100
 
 int main(int argc, char *argv[])
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dis(0, 1);
-
     // Initialize the VkApplicationInfo structure
     VkApplicationInfo applicationInfo0 = {};
     applicationInfo0.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -73,59 +69,49 @@ int main(int argc, char *argv[])
     // Create logical devices that support graphics
     std::vector<VkDevice> logicalDevices0;
 
-    // Loop 9 times to hit limit
-    for (uint32_t x = 0; x < LIMIT; ++x)
+    // Loop LIMIT times to hit limit
+    for (uint32_t i = 0; i < LIMIT; ++i)
     {
-        for (uint32_t i = 0; i < gpus0.size(); ++i)
+        for (uint32_t j = 0; j < queueFamilyProperties0[0].size(); ++j)
         {
-            for (uint32_t j = 0; j < queueFamilyProperties0[i].size(); ++j)
+            if (queueFamilyProperties0[0][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
-                if (queueFamilyProperties0[i][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                {
-                    // Assign random priorities
-                    float sum = 0.0f;
-                    std::vector<float> queuePriorities;
-                    for (uint32_t k = 0;
-                            k < queueFamilyProperties0[i][j].queueCount; ++k)
-                    {
-                        float priority = dis(gen);
-                        queuePriorities.push_back(priority);
-                        sum += priority;
-                    }
+                // Assign priorities
+                std::vector<float> queuePriorities;
+				//uint32_t queueCount = queueFamilyProperties0[0][j].queueCount;
+				uint32_t queueCount = 1;
 
-                    // Normalise priorities
-                    for (unsigned int k = 0; k < queuePriorities.size(); ++k)
-                    {
-                        queuePriorities[k] /= sum;
-                    }
+				for (uint32_t k = 0; k < queueCount; ++k)
+				{
+					queuePriorities.push_back(1.0f/queueCount);
+				}
 
-                    VkDeviceQueueCreateInfo queueInfo = {};
-                    queueInfo.queueFamilyIndex = j;
-                    queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-                    queueInfo.pNext = NULL;
-                    queueInfo.queueCount = queueFamilyProperties0[i][j].queueCount;
-                    queueInfo.pQueuePriorities = queuePriorities.data();
+                VkDeviceQueueCreateInfo queueInfo = {};
+                queueInfo.queueFamilyIndex = j;
+                queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                queueInfo.pNext = NULL;
+                queueInfo.queueCount = queuePriorities.size();
+                queueInfo.pQueuePriorities = queuePriorities.data();
 
-                    VkDeviceCreateInfo deviceInfo = {};
-                    deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-                    deviceInfo.flags = 0;
-                    deviceInfo.pNext = NULL;
-                    deviceInfo.queueCreateInfoCount = 1;
-                    deviceInfo.pQueueCreateInfos = &queueInfo;
-                    deviceInfo.enabledExtensionCount = 0;
-                    deviceInfo.ppEnabledExtensionNames = NULL;
-                    deviceInfo.enabledLayerCount = 0;
-                    deviceInfo.ppEnabledLayerNames = NULL;
-                    deviceInfo.pEnabledFeatures = NULL;
+                VkDeviceCreateInfo deviceInfo = {};
+                deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+                deviceInfo.flags = 0;
+                deviceInfo.pNext = NULL;
+                deviceInfo.queueCreateInfoCount = 1;
+                deviceInfo.pQueueCreateInfos = &queueInfo;
+                deviceInfo.enabledExtensionCount = 0;
+                deviceInfo.ppEnabledExtensionNames = NULL;
+                deviceInfo.enabledLayerCount = 0;
+                deviceInfo.ppEnabledLayerNames = NULL;
+                deviceInfo.pEnabledFeatures = NULL;
 
-                    VkDevice device;
-                    VkResult res = vkCreateDevice(gpus0[i], &deviceInfo,
-                            NULL, &device);
+                VkDevice device;
+                VkResult res = vkCreateDevice(gpus0[0], &deviceInfo,
+                        NULL, &device);
 
-                    logicalDevices0.push_back(device);
+                logicalDevices0.push_back(device);
 
-                    assert(res == VK_SUCCESS);
-                }
+                assert(res == VK_SUCCESS);
             }
         }
     }
