@@ -7,10 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    // std::random_device rd;
-    // std::mt19937 gen(rd());
-    // std::uniform_real_distribution<float> dis(0, 1);
-
     // Initialize the VkApplicationInfo structure
     VkApplicationInfo applicationInfo0 = {};
     applicationInfo0.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -71,7 +67,7 @@ int main(int argc, char *argv[])
         queueFamilyProperties0.push_back(properties);
     }
 
-    // Create logical devices that support graphics
+    // Create logical devices that support graphics on the first available gpu
     std::vector<VkDevice> logicalDevices0;
 
     for (uint32_t j = 0; j < queueFamilyProperties0[0].size(); ++j)
