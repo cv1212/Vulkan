@@ -2,6 +2,8 @@
 #include <cassert>
 #include <vector>
 
+#define BAIL_ON_CONDITION(C) if((C)) { return 1; }
+#define BAIL_IF_NOT_SUCCESS(V) BAIL_ON_CONDITION((V) != VK_SUCCESS)
 #define LIMIT 100
 
 int main(int argc, char *argv[])
@@ -30,7 +32,7 @@ int main(int argc, char *argv[])
     // Create instance
     VkInstance instance0;
     VkResult result0 = vkCreateInstance(&instanceCreateInfo0, NULL, &instance0);
-    assert(result0 == VK_SUCCESS);
+	BAIL_IF_NOT_SUCCESS(result0);
 
     // Enumerate physical devices
     std::vector<VkPhysicalDevice> gpus0;
@@ -45,8 +47,8 @@ int main(int argc, char *argv[])
     }
     while(result1 == VK_INCOMPLETE);
 
-    assert(gpuCount0 != 0);
-    assert(result1 == VK_SUCCESS);
+	BAIL_ON_CONDITION(gpuCount0 == 0);
+	BAIL_IF_NOT_SUCCESS(result1);
 
     // Enumerate queue family properties for each gpu available
     std::vector<std::vector<VkQueueFamilyProperties>> queueFamilyProperties0;
@@ -76,7 +78,6 @@ int main(int argc, char *argv[])
         {
             if (queueFamilyProperties0[0][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
-                // Assign priorities
                 std::vector<float> queuePriorities;
 				//uint32_t queueCount = queueFamilyProperties0[0][j].queueCount;
 				uint32_t queueCount = 1;
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
 
                 logicalDevices0.push_back(device);
 
-                assert(res == VK_SUCCESS);
+                BAIL_IF_NOT_SUCCESS(res);
             }
         }
     }

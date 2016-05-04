@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     {
         if (queueFamilyProperties0[0][j].queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
+			// Request only 1 queue
             std::vector<float> queuePriorities;
             queuePriorities.push_back(1.0f);
 
