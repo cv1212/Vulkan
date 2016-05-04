@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
             queueInfo.queueFamilyIndex = j;
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.pNext = NULL;
-            queueInfo.queueCount = queueFamilyProperties0[0][j].queueCount;
+            queueInfo.queueCount = queuePriorities.size();
             queueInfo.pQueuePriorities = queuePriorities.data();
 
             VkDeviceCreateInfo deviceInfo = {};
