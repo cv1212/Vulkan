@@ -35,5 +35,5 @@ endif()
 find_library(VULKAN_LOADER NAMES ${VULKAN_LOADER_NAME})
 
 # Create executables
-add_executable(CreateInstanceLimitBug CreateInstanceLimitBug.cpp)
-target_link_libraries(CreateInstanceLimitBug ${VULKAN_LOADER})
+add_executable(CreateDeviceLimit CreateDeviceLimit.cpp)
+target_link_libraries(CreateDeviceLimit ${VULKAN_LOADER})
