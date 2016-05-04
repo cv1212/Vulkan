@@ -2,6 +2,8 @@
 #include <cassert>
 #include <random>
 
+#define LIMIT 9
+
 int main(int argc, char *argv[])
 {
     std::random_device rd;
@@ -12,11 +14,11 @@ int main(int argc, char *argv[])
     VkApplicationInfo applicationInfo0 = {};
     applicationInfo0.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo0.pNext = NULL;
-    applicationInfo0.pApplicationName = "ResetFencesBug";
+    applicationInfo0.pApplicationName = "CreateInstancesLimitBug";
     applicationInfo0.applicationVersion = 1;
-    applicationInfo0.pEngineName = "ResetFencesBugEngine";
+    applicationInfo0.pEngineName = "CreateInstancesLimitBugEngine";
     applicationInfo0.engineVersion = 1;
-    applicationInfo0.apiVersion = VK_MAKE_VERSION(1, 0, 3);
+    applicationInfo0.apiVersion = VK_MAKE_VERSION(1, 0, 8);
 
     // Initialize the VkInstanceCreateInfo structure
     VkInstanceCreateInfo instanceCreateInfo0 = {};
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
     std::vector<VkDevice> logicalDevices0;
 
     // Loop 9 times to hit limit
-    for (uint32_t k; k < 9; ++k)
+    for (uint32_t x = 0; x < LIMIT; ++x)
     {
         for (uint32_t i = 0; i < gpus0.size(); ++i)
         {
@@ -83,7 +85,7 @@ int main(int argc, char *argv[])
                     // Assign random priorities
                     float sum = 0.0f;
                     std::vector<float> queuePriorities;
-                    for (unsigned int k = 0;
+                    for (uint32_t k = 0;
                             k < queueFamilyProperties0[i][j].queueCount; ++k)
                     {
                         float priority = dis(gen);

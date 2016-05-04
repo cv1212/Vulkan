@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
                 // Assign random priorities
                 float sum = 0.0f;
                 std::vector<float> queuePriorities;
-                for (unsigned int k = 0;
+                for (uint32_t k = 0;
                         k < queueFamilyProperties0[i][j].queueCount; ++k)
                 {
                     float priority = dis(gen);
@@ -150,7 +150,6 @@ int main(int argc, char *argv[])
     // Check that fence was reset to the unsignled state
     VkResult result5 = vkGetFenceStatus(logicalDevices0[0], fence0);
     assert(result5 == VK_NOT_READY);
-    assert(result5 == VK_SUCCESS);
 
     vkDestroyFence(logicalDevices0[0], fence0, NULL);
 
